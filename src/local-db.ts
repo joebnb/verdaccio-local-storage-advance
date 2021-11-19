@@ -1,24 +1,26 @@
 import _ from "lodash";
-import os from "os";
+import os, { type } from "os";
 import path from "path";
 import buildDebug from "debug";
 
 import LocalDatabase from "@verdaccio/local-storage";
 import { getMatchedPackagesSpec } from "@verdaccio/utils";
 
-import { CustomConfig } from "../types/index";
 import LocalStorageFS from "./local-fs";
-
+import {
+  CustomConfig,
+  SearchItemPkg,
+  Score,
+  SearchQuery,
+  SearchItem
+} from "../types/index";
 import {
   Logger,
   Callback,
   IPluginStorage,
   PluginOptions,
   IPackageStorage,
-  Config,
-  onEndSearchPackage,
-  onSearchPackage,
-  onValidatePackage
+  Config
 } from "@verdaccio/types";
 
 const debug = buildDebug("verdaccio:plugin:local-storage:experimental");
@@ -28,15 +30,25 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
   config: CustomConfig & Config;
   version?: string;
   options: PluginOptions<CustomConfig>;
-  public logger: Logger;
+  private _logger: Logger;
   public constructor(
     config: CustomConfig,
     options: PluginOptions<CustomConfig>
   ) {
     super(config, options.logger);
     this.config = config;
-    this.logger = options.logger;
+    this._logger = options.logger;
     this.options = options;
+  }
+  init() {
+    return super.init.apply(this, arguments as any);
+  }
+
+  public async getSecret(): Promise<string> {
+    return super.getSecret.apply(this, arguments as any);
+  }
+  public async setSecret(secret: string): Promise<void> {
+    return super.setSecret.apply(this, arguments as any);
   }
 
   // /**
@@ -44,8 +56,20 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
   //  * @param {*} name
   //  * @return {Error|*}
   //  */
-  public async add(name: string, callback: Callback): Promise<void> {
+  public async add(name: string): Promise<void> {
     return await super.add.apply(this, arguments as any);
+  }
+
+  /**
+   * Return all database elements.
+   * @return {Array}
+   */
+  public async get(): Promise<void> {
+    return await super.get.apply(this, arguments as any);
+  }
+
+  public async getScore(_pkg: SearchItemPkg): Promise<Score> {
+    return await super.getScore.apply(this, arguments as any);
   }
 
   /**
@@ -54,11 +78,7 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
    * @param onEnd
    * @param validateName
    */
-  public async search(
-    onPackage: onSearchPackage,
-    onEnd: onEndSearchPackage,
-    validateName: onValidatePackage
-  ): Promise<void> {
+  public async search(query: SearchQuery): Promise<SearchItem[]> {
     /**
      * Example of implementation:
      * try {
@@ -82,16 +102,12 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
    * @param {*} name
    * @return {Error|*}
    */
-  public async remove(name: string, callback: Callback): Promise<void> {
+  public async remove(name: string): Promise<void> {
     return await super.remove.apply(this, arguments as any);
   }
 
-  /**
-   * Return all database elements.
-   * @return {Array}
-   */
-  public async get(callback: Callback): Promise<void> {
-    return await super.get.apply(this, arguments as any);
+  public async clean(): Promise<void> {
+    return super.clean.apply(this, arguments as any);
   }
 
   public getPackageStorage(packageName: string): IPackageStorage {
@@ -119,9 +135,9 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
     return new LocalStorageFS(this.config, this.options, packageStoragePath);
   }
   private _getLocalStoragePathChild(storage: string | void): string {
-    const globalConfigStorage = this.getStoragePath();
+    const globalConfigStorage = this.getStoragePathChild();
     if (_.isNil(globalConfigStorage)) {
-      this.logger.error(
+      this._logger.error(
         "property storage in config.yaml is required for using  this plugin"
       );
       throw new Error(
@@ -136,7 +152,7 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
     }
   }
 
-  private getStoragePath() {
+  private getStoragePathChild() {
     const { storage } = this.config;
     if (typeof storage !== "string") {
       throw new TypeError("storage field is mandatory");
@@ -144,12 +160,12 @@ export default class VerdaccioStoragePlugin extends LocalDatabase
 
     const storagePath = path.isAbsolute(storage)
       ? storage
-      : path.normalize(path.join(this.getBaseConfigPath(), storage));
+      : path.normalize(path.join(this.getBaseConfigPathChild(), storage));
     debug("storage path %o", storagePath);
     return storagePath;
   }
 
-  private getBaseConfigPath(): string {
+  private getBaseConfigPathChild(): string {
     const default_config_path = path.join(
       os.homedir(),
       ".config",

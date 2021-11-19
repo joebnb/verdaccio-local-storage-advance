@@ -1,5 +1,5 @@
 import _ from "lodash";
-import LocalStorageFS from "@verdaccio/local-storage/lib/local-fs";
+import LocalStorageFS from "@verdaccio/local-storage/build/local-fs";
 
 import LocalDB from "./local-db";
 import { FSHelper } from "./utils/fs-helper";
@@ -31,6 +31,10 @@ export default class LocalFS extends LocalStorageFS {
     this.fsHelper = new FSHelper(path, logger);
     this.localDB = new LocalDB(config, options);
     this.filter = new ConfigFilter(config);
+  }
+
+  public init() {
+    return Promise.resolve();
   }
 
   public savePackage(name: string, value: Package, cb: Callback): void {
@@ -72,7 +76,7 @@ export default class LocalFS extends LocalStorageFS {
     if (this.filter.isEnableRecord()) {
       await this._removePackageDB();
     }
-    return await super.readPackage.apply(this, arguments as any);
+    return await super.removePackage.apply(this, arguments as any);
   }
 
   public writeTarball(name: string): IUploadTarball {
@@ -106,9 +110,7 @@ export default class LocalFS extends LocalStorageFS {
     const isInFilter = this.filter.isInRecordFilterList(name);
     const isInRecordList = this.filter.isInRecordList(name);
     if (isEnableRecord && isInRecordList && !isInFilter) {
-      this.localDB.add(name, () => {
-        this.logger.info(`add package ${name} to db`);
-      });
+      this.localDB.add(name);
     }
   }
 
@@ -147,7 +149,7 @@ export default class LocalFS extends LocalStorageFS {
       .then(async d => {
         if (d && d.name) {
           this.logger.info(`remove ${d.name} from db`);
-          this.localDB.remove(d.name, () => {});
+          this.localDB.remove(d.name);
         }
       })
       .catch(e => {
