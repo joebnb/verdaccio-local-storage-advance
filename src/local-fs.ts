@@ -72,7 +72,7 @@ export default class LocalFS extends LocalStorageFS {
     if (this.filter.isEnableRecord()) {
       await this._removePackageDB();
     }
-    return await super.readPackage.apply(this, arguments as any);
+    return await super.removePackage.apply(this, arguments as any);
   }
 
   public writeTarball(name: string): IUploadTarball {
