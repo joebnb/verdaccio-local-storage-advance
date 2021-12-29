@@ -1,6 +1,6 @@
 {
   "name": "verdaccio-local-storage-advance",
-  "version": "0.0.3",
+  "version": "0.0.7",
   "description": "An amazing verdaccio plugin",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.177",
-    "@verdaccio/commons-api": "^10.0.1",
-    "@verdaccio/local-storage": "^10.0.7",
-    "@verdaccio/streams": "^10.0.0",
-    "@verdaccio/utils": "^6.0.0-6-next.9",
+    "@verdaccio/commons-api": "^10.1.0",
+    "@verdaccio/local-storage": "^10.1.0",
+    "@verdaccio/streams": "^10.1.0",
+    "@verdaccio/utils": "^6.0.0-6-next.10",
     "lodash": "^4.17.21",
     "tar-stream": "^2.2.0"
   },
