@@ -1,6 +1,6 @@
 {
   "name": "verdaccio-local-storage-advance",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "An amazing verdaccio plugin",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

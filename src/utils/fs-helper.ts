@@ -40,16 +40,15 @@ export class FSHelper {
   public async readTarFile(file_path: string, fileStream: Stream) {
     return new Promise((resolve, reject) => {
       const extract = tarStream.extract();
+      let file = "";
       extract.on("entry", (header, stream, next) => {
-        let file = "";
-
         stream.on("data", chunk => {
           file += chunk;
         });
         stream.on("end", function() {
           if (
             header?.name &&
-            path.basename(header.name || "").toLowerCase() ==
+            path.basename(header?.name || "").toLowerCase() ==
               file_path.toLowerCase()
           ) {
             resolve(file);
@@ -58,15 +57,16 @@ export class FSHelper {
           next();
         });
 
-        extract.on("finish", function() {
-          file = "";
-        });
-
-        extract.on("error", e => {
-          this.logger.error(e);
-        });
-
         stream.resume();
+      });
+
+      extract.on("finish", function() {
+        file = "";
+      });
+
+      extract.on("error", e => {
+        this.logger.error(e);
+        reject(e);
       });
 
       fileStream.pipe(createGunzip()).pipe(extract);

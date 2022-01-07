@@ -132,10 +132,16 @@ export default class LocalFS extends LocalStorageFS {
     this.fsHelper.readPackage(packageJSONPath).then(pkg => {
       const latestVersion = pkg["dist-tags"]?.latest;
       if (pkg._getReadmeFromTarball && latestVersion == tarballVersion) {
-        this.fsHelper.readTarFile("readme.md", FileStream).then(data => {
-          pkg.readme = data;
-          this.fsHelper.savePackage(packageJSONPath, pkg);
-        });
+        this.fsHelper
+          .readTarFile("readme.md", FileStream)
+          .then(data => {
+            pkg.readme = data;
+            this.fsHelper.savePackage(packageJSONPath, pkg);
+          })
+          .catch(e => {
+            console.error(e);
+            this.fsHelper.savePackage(packageJSONPath, pkg);
+          });
       }
     });
   }
