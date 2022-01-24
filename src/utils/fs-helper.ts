@@ -62,6 +62,7 @@ export class FSHelper {
 
       extract.on("finish", function() {
         file = "";
+        reject("no_file_found");
       });
 
       extract.on("error", e => {
